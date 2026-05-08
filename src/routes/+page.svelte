@@ -6,7 +6,7 @@
   const CHANNEL_PANS = [-1, 0, 1];
 
   // --- Config ---
-  let slideInterval = $state(1);
+  let slideInterval = $state(500);
   let carrierHz = $state(120);
   let beatHz = $state(6);
   let volume = $state(0.3);
@@ -272,14 +272,14 @@
 
   // --- Slideshow timer ---
   $effect(() => {
-    if (!slideshowPlaying) return;
-    const interval = slideInterval * 100;
+    if (!slideshowPlaying)
+      return;
 
     const id = setInterval(() => {
       if (slides.length > 1) {
         currentSlide = (currentSlide + 1) % slides.length;
       }
-    }, interval);
+    }, slideInterval);
 
     return () => clearInterval(id);
   });
@@ -484,8 +484,8 @@
         {/if}
 
         <label>
-          <span>Interval: <strong>{slideInterval}s</strong></span>
-          <input type="range" min="1" max="60" step="1" bind:value={slideInterval} />
+          <span>Interval: <strong>{slideInterval}ms</strong></span>
+          <input type="range" min="100" max="6000" step="100" bind:value={slideInterval} />
         </label>
       </section>
 
