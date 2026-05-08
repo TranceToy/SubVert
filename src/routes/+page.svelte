@@ -14,12 +14,16 @@
   let spiralColor = $state('#ffffff');
   let spiralOpacity = $state(0.2);
   let spiralTurns = $state(15);
-  let showSettings = $state(false);
+  let showSettings = $state(true);
 
   // --- Slide state ---
   let slides = $state([]); // array of { name, url }
   let currentSlide = $state(0);
   let folderName = $state('');
+  let slideshowPlaying = $state(false);
+
+  // --- Spiral state ---
+  let spiralPlaying = $state(false);
 
   // --- Audio state ---
   let isPlaying = $state(false);
@@ -268,8 +272,8 @@
 
   // --- Slideshow timer ---
   $effect(() => {
+    if (!slideshowPlaying) return;
     const interval = slideInterval * 100;
-    const count = slides.length;
 
     const id = setInterval(() => {
       if (slides.length > 1) {
@@ -278,6 +282,22 @@
     }, interval);
 
     return () => clearInterval(id);
+  });
+
+  // --- Spiral animation ---
+  $effect(() => {
+    if (!spiralPlaying) return;
+    prevTime = null;
+    rafId = requestAnimationFrame(animate);
+
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafId = null;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    };
   });
 
   // --- Filesystem ---
@@ -360,11 +380,10 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     window.addEventListener('resize', handleResize);
-    rafId = requestAnimationFrame(animate);
   });
 
   onDestroy(() => {
-    cancelAnimationFrame(rafId);
+    if (rafId !== null) cancelAnimationFrame(rafId);
     stopAudio();
     if (suggestionsPlaying) stopSuggestions();
     suggestionsCtx?.close();
@@ -407,8 +426,16 @@
   <canvas bind:this={canvas} class="spiral"></canvas>
 
   <!-- Bottom HUD -->
-  <div class="hud-zone">
+  <div class="hud-zone" class:idle={!slideshowPlaying && !spiralPlaying && !isPlaying && !suggestionsPlaying}>
     <div class="hud">
+      {#if slides.length > 0}
+        <button class="btn-primary" onclick={() => slideshowPlaying = !slideshowPlaying}>
+          {slideshowPlaying ? '⏹ Stop' : '▶ Play'} Slideshow
+        </button>
+      {/if}
+      <button class="btn-primary" onclick={() => spiralPlaying = !spiralPlaying}>
+        {spiralPlaying ? '⏹ Stop' : '▶ Play'} Spiral
+      </button>
       <button class="btn-primary" onclick={toggleAudio}>
         {isPlaying ? '⏹ Stop' : '▶ Play'} Binaural Beats
       </button>
@@ -615,7 +642,8 @@
     transition: opacity 0.3s ease;
   }
 
-  .hud-zone:hover .hud {
+  .hud-zone:hover .hud,
+  .hud-zone.idle .hud {
     opacity: 1;
   }
 
