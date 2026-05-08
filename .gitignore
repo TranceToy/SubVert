@@ -1,0 +1,8 @@
+build/
+node_modules/
+
+generated/
+output/
+
+.idea/
+.serena/
