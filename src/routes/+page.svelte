@@ -1,5 +1,6 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
+  import { base } from '$app/paths';
 
   const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'bmp']);
   const AUDIO_EXTENSIONS = new Set(['mp3', 'wav', 'ogg', 'oga', 'm4a', 'mp4', 'aac', 'flac', 'opus', 'webm']);
@@ -38,16 +39,23 @@
 
   // --- DOM refs ---
   let canvas;
+  let beatsAudio;
+  let suggestionsAudio;
 
   // --- Audio internals ---
   let audioCtx = null;
   let leftOsc = null;
   let rightOsc = null;
   let gainNode = null;
+  let beatsStreamDest = null;
 
   // --- Suggestions internals ---
   let suggestionsCtx = null;
   let suggestionsGain = null;
+  let suggestionsStreamDest = null;
+
+  // --- Media Session ---
+  let pausedFromMediaSession = { binaural: false, suggestions: false };
   let channelStates = null; // array of { panner, queue, source, timeoutId } while playing
 
   // --- Animation internals ---
@@ -114,7 +122,9 @@
 
     gainNode = audioCtx.createGain();
     gainNode.gain.value = volume;
-    gainNode.connect(audioCtx.destination);
+
+    beatsStreamDest = audioCtx.createMediaStreamDestination();
+    gainNode.connect(beatsStreamDest);
 
     const leftPan = audioCtx.createStereoPanner();
     leftPan.pan.value = -1;
@@ -135,13 +145,20 @@
     rightOsc.frequency.value = carrierHz + beatHz;
     rightOsc.connect(rightPan);
     rightOsc.start();
+
+    beatsAudio.srcObject = beatsStreamDest.stream;
+    beatsAudio.play();
   }
 
   function stopAudio() {
     leftOsc?.stop();
     rightOsc?.stop();
     audioCtx?.close();
-    audioCtx = leftOsc = rightOsc = gainNode = null;
+    audioCtx = leftOsc = rightOsc = gainNode = beatsStreamDest = null;
+    if (beatsAudio) {
+      beatsAudio.pause();
+      beatsAudio.srcObject = null;
+    }
   }
 
   function toggleAudio() {
@@ -177,7 +194,8 @@
     suggestionsCtx = new AudioContext();
     suggestionsGain = suggestionsCtx.createGain();
     suggestionsGain.gain.value = suggestionsVolume;
-    suggestionsGain.connect(suggestionsCtx.destination);
+    suggestionsStreamDest = suggestionsCtx.createMediaStreamDestination();
+    suggestionsGain.connect(suggestionsStreamDest);
     return suggestionsCtx;
   }
 
@@ -224,6 +242,10 @@
     for (const channel of channelStates) {
       scheduleNextOnChannel(channel);
     }
+
+    suggestionsAudio.srcObject = suggestionsStreamDest.stream;
+    suggestionsAudio.play();
+
     suggestionsPlaying = true;
   }
 
@@ -242,6 +264,12 @@
       channel.panner.disconnect();
     }
     channelStates = null;
+
+    if (suggestionsAudio) {
+      suggestionsAudio.pause();
+      suggestionsAudio.srcObject = null;
+    }
+
     suggestionsPlaying = false;
   }
 
@@ -269,6 +297,41 @@
     const vol = suggestionsVolume;
     if (suggestionsGain) suggestionsGain.gain.value = vol;
   });
+
+  // --- Media Session ---
+  $effect(() => {
+    if (!('mediaSession' in navigator)) return;
+
+    const labels = [];
+    if (isPlaying) labels.push('Binaural Beats');
+    if (suggestionsPlaying) labels.push('Suggestions');
+
+    if (labels.length === 0) {
+      navigator.mediaSession.metadata = null;
+      navigator.mediaSession.playbackState = 'none';
+      return;
+    }
+
+    const title = labels.join(' + ');
+    const artworkUrl = `${base}/pwa512.png`;
+    const artwork = [{ src: artworkUrl, sizes: '512x512', type: 'image/png' }];
+    const metadata = new MediaMetadata({ title, artist: 'SubVert', artwork });
+
+    navigator.mediaSession.metadata = metadata;
+    navigator.mediaSession.playbackState = 'playing';
+  });
+
+  function handleMediaSessionPause() {
+    pausedFromMediaSession = { binaural: isPlaying, suggestions: suggestionsPlaying };
+    if (isPlaying) toggleAudio();
+    if (suggestionsPlaying) toggleSuggestions();
+  }
+
+  function handleMediaSessionPlay() {
+    if (pausedFromMediaSession.binaural && !isPlaying) toggleAudio();
+    if (pausedFromMediaSession.suggestions && !suggestionsPlaying) toggleSuggestions();
+    pausedFromMediaSession = { binaural: false, suggestions: false };
+  }
 
   // --- Slideshow timer ---
   $effect(() => {
@@ -380,6 +443,11 @@
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     window.addEventListener('resize', handleResize);
+
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('pause', handleMediaSessionPause);
+      navigator.mediaSession.setActionHandler('play', handleMediaSessionPlay);
+    }
   });
 
   onDestroy(() => {
@@ -387,7 +455,7 @@
     stopAudio();
     if (suggestionsPlaying) stopSuggestions();
     suggestionsCtx?.close();
-    suggestionsCtx = suggestionsGain = null;
+    suggestionsCtx = suggestionsGain = suggestionsStreamDest = null;
     window.removeEventListener('resize', handleResize);
     for (const slide of slides) {
       URL.revokeObjectURL(slide.url);
@@ -404,6 +472,11 @@
 </script>
 
 <div class="app">
+  <!-- Hidden audio sinks: route Web Audio output through real <audio> elements
+       so Chromium keeps the page audible when the screen is locked. -->
+  <audio bind:this={beatsAudio} playsinline></audio>
+  <audio bind:this={suggestionsAudio} playsinline></audio>
+
   <!-- Slideshow background -->
   <div class="slideshow">
     {#if slides.length === 0}
