@@ -41,6 +41,7 @@
   let canvas;
   let beatsAudio;
   let suggestionsAudio;
+  let silentAudio;
 
   // --- Audio internals ---
   let audioCtx = null;
@@ -114,6 +115,35 @@
     ctx.restore();
 
     rafId = requestAnimationFrame(animate);
+  }
+
+  // Build a 1s silent 16-bit mono WAV as a Blob URL. A regular <audio src=…>
+  // element playing this in a loop is what mobile Chromium recognises as
+  // "media playback" — without it the lock-screen / notification controls do
+  // not appear, even though Web Audio output via MediaStream remains audible.
+  function createSilentWavUrl() {
+    const sampleRate = 22050;
+    const sampleCount = sampleRate;
+    const dataSize = sampleCount * 2;
+    const buffer = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(buffer);
+
+    view.setUint32(0, 0x46464952, true);  // "RIFF"
+    view.setUint32(4, 36 + dataSize, true);
+    view.setUint32(8, 0x45564157, true);  // "WAVE"
+    view.setUint32(12, 0x20746d66, true); // "fmt "
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);          // PCM
+    view.setUint16(22, 1, true);          // mono
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    view.setUint32(36, 0x61746164, true); // "data"
+    view.setUint32(40, dataSize, true);
+
+    const blob = new Blob([buffer], { type: 'audio/wav' });
+    return URL.createObjectURL(blob);
   }
 
   // --- Audio ---
@@ -300,6 +330,15 @@
 
   // --- Media Session ---
   $effect(() => {
+    if (!silentAudio) return;
+    if (isPlaying || suggestionsPlaying) {
+      silentAudio.play();
+    } else {
+      silentAudio.pause();
+    }
+  });
+
+  $effect(() => {
     if (!('mediaSession' in navigator)) return;
 
     const labels = [];
@@ -444,6 +483,8 @@
     canvas.height = window.innerHeight;
     window.addEventListener('resize', handleResize);
 
+    silentAudio.src = createSilentWavUrl();
+
     if ('mediaSession' in navigator) {
       navigator.mediaSession.setActionHandler('pause', handleMediaSessionPause);
       navigator.mediaSession.setActionHandler('play', handleMediaSessionPlay);
@@ -456,6 +497,7 @@
     if (suggestionsPlaying) stopSuggestions();
     suggestionsCtx?.close();
     suggestionsCtx = suggestionsGain = suggestionsStreamDest = null;
+    if (silentAudio?.src) URL.revokeObjectURL(silentAudio.src);
     window.removeEventListener('resize', handleResize);
     for (const slide of slides) {
       URL.revokeObjectURL(slide.url);
@@ -476,6 +518,7 @@
        so Chromium keeps the page audible when the screen is locked. -->
   <audio bind:this={beatsAudio} playsinline></audio>
   <audio bind:this={suggestionsAudio} playsinline></audio>
+  <audio bind:this={silentAudio} loop playsinline></audio>
 
   <!-- Slideshow background -->
   <div class="slideshow">
