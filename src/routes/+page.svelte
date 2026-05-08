@@ -171,9 +171,7 @@
   }
 
   // --- Suggestions ---
-  function shuffledIndices(n) {
-    const arr = [];
-    for (let i = 0; i < n; i++) arr.push(i);
+  function shuffleInPlace(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       const tmp = arr[i];
@@ -181,6 +179,12 @@
       arr[j] = tmp;
     }
     return arr;
+  }
+
+  function shuffledIndices(n) {
+    const arr = [];
+    for (let i = 0; i < n; i++) arr.push(i);
+    return shuffleInPlace(arr);
   }
 
   function randomGapMs(minSecs, maxSecs) {
@@ -339,8 +343,12 @@
       return;
 
     const id = setInterval(() => {
-      if (slides.length > 1) {
-        currentSlide = (currentSlide + 1) % slides.length;
+      if (slides.length <= 1) return;
+      if (currentSlide + 1 < slides.length) {
+        currentSlide += 1;
+      } else {
+        slides = shuffleInPlace([...slides]);
+        currentSlide = 0;
       }
     }, slideInterval);
 
@@ -388,7 +396,7 @@
       found.push({ name, url });
     }
 
-    found.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+    shuffleInPlace(found);
 
     slides = found;
     currentSlide = 0;

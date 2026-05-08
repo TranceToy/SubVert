@@ -34,7 +34,6 @@ There is no backend. No accounts, no uploads, no analytics, no tracking. All ima
 
 ## Tips
 
-- For the slideshow, file order is alphabetical (with natural number sorting), so name files `001.jpg`, `002.jpg`… if order matters.
 - The "Suggestions" feature is designed for very short clips played in long random sequences. Typical use is a folder of one- to three-second voice samples.
 - The spiral and slideshow can be enjoyed without any audio.
 - Binaural beats need headphones to work as intended; speakers will not produce the same effect.
