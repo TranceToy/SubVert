@@ -8,12 +8,6 @@ const config = {
     }),
     paths: {
       base: process.env.BASE_PATH ?? ''
-    },
-    prerender: {
-      handleHttpError: ({ path, referrer, message }) => {
-        if (path.endsWith('/favicon.png')) return;
-        throw new Error(message);
-      }
     }
   }
 };
