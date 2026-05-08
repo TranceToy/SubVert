@@ -661,14 +661,17 @@
   .slideshow {
     position: absolute;
     inset: 0;
+    overflow: hidden;
   }
 
   .slide {
     position: absolute;
-    inset: 0;
-    width: 100%;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
     height: 100%;
-    object-fit: contain;
+    width: auto;
+    max-width: none;
     opacity: 0;
   }
 
