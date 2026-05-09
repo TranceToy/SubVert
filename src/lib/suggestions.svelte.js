@@ -113,7 +113,8 @@ export class Suggestions {
   }
 
   applyParams() {
-    if (this.#gain) this.#gain.gain.value = this.volume;
+    const volume = this.volume;
+    if (this.#gain) this.#gain.gain.value = volume;
   }
 
   destroy() {

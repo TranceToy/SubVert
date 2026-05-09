@@ -65,8 +65,11 @@ export class BinauralBeats {
   }
 
   applyParams() {
-    if (this.#leftOsc) this.#leftOsc.frequency.value = this.carrierHz;
-    if (this.#rightOsc) this.#rightOsc.frequency.value = this.carrierHz + this.beatHz;
-    if (this.#gain) this.#gain.gain.value = this.volume;
+    const carrier = this.carrierHz;
+    const beat = this.beatHz;
+    const volume = this.volume;
+    if (this.#leftOsc) this.#leftOsc.frequency.value = carrier;
+    if (this.#rightOsc) this.#rightOsc.frequency.value = carrier + beat;
+    if (this.#gain) this.#gain.gain.value = volume;
   }
 }
