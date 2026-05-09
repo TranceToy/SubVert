@@ -4,6 +4,7 @@
 
   import { Slideshow } from '$lib/slideshow.svelte.js';
   import { Spiral } from '$lib/spiral.svelte.js';
+  import { Strobe } from '$lib/strobe.svelte.js';
   import { BinauralBeats } from '$lib/binaural.svelte.js';
   import { Suggestions } from '$lib/suggestions.svelte.js';
 
@@ -15,6 +16,10 @@
   import SpiralControls from '$lib/SpiralControls.svelte';
   import SpiralSettings from '$lib/SpiralSettings.svelte';
 
+  import StrobeView from '$lib/StrobeView.svelte';
+  import StrobeControls from '$lib/StrobeControls.svelte';
+  import StrobeSettings from '$lib/StrobeSettings.svelte';
+
   import BinauralView from '$lib/BinauralView.svelte';
   import BinauralControls from '$lib/BinauralControls.svelte';
   import BinauralSettings from '$lib/BinauralSettings.svelte';
@@ -25,6 +30,7 @@
 
   const slideshow = new Slideshow();
   const spiral = new Spiral();
+  const strobe = new Strobe();
   const binaural = new BinauralBeats();
   const suggestions = new Suggestions();
 
@@ -76,17 +82,19 @@
 <div class="app">
   <SlideshowView {slideshow} />
   <SpiralView {spiral} />
+  <StrobeView {strobe} />
   <BinauralView {binaural} />
   <SuggestionsView {suggestions} />
 
   <!-- Bottom HUD -->
   <div
     class="hud-zone"
-    class:idle={!slideshow.playing && !spiral.playing && !binaural.playing && !suggestions.playing}
+    class:idle={!slideshow.playing && !spiral.playing && !strobe.playing && !binaural.playing && !suggestions.playing}
   >
     <div class="hud">
       <SlideshowControls {slideshow} />
       <SpiralControls {spiral} />
+      <StrobeControls {strobe} />
       <BinauralControls {binaural} />
       <SuggestionsControls {suggestions} />
     </div>
@@ -111,6 +119,7 @@
       <SuggestionsSettings {suggestions} />
       <BinauralSettings {binaural} />
       <SpiralSettings {spiral} />
+      <StrobeSettings {strobe} />
     </aside>
   {/if}
 </div>
