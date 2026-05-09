@@ -7,6 +7,7 @@
   import { Strobe } from '$lib/strobe.svelte.js';
   import { BinauralBeats } from '$lib/binaural.svelte.js';
   import { Suggestions } from '$lib/suggestions.svelte.js';
+  import { Messages } from '$lib/messages.svelte.js';
 
   import SlideshowView from '$lib/SlideshowView.svelte';
   import SlideshowControls from '$lib/SlideshowControls.svelte';
@@ -28,11 +29,16 @@
   import SuggestionsControls from '$lib/SuggestionsControls.svelte';
   import SuggestionsSettings from '$lib/SuggestionsSettings.svelte';
 
+  import MessagesView from '$lib/MessagesView.svelte';
+  import MessagesControls from '$lib/MessagesControls.svelte';
+  import MessagesSettings from '$lib/MessagesSettings.svelte';
+
   const slideshow = new Slideshow();
   const spiral = new Spiral();
   const strobe = new Strobe();
   const binaural = new BinauralBeats();
   const suggestions = new Suggestions();
+  const messages = new Messages();
 
   let showSettings = $state(true);
   let pausedFromMediaSession = { binaural: false, suggestions: false };
@@ -85,11 +91,12 @@
   <StrobeView {strobe} />
   <BinauralView {binaural} />
   <SuggestionsView {suggestions} />
+  <MessagesView {messages} />
 
   <!-- Bottom HUD -->
   <div
     class="hud-zone"
-    class:idle={!slideshow.playing && !spiral.playing && !strobe.playing && !binaural.playing && !suggestions.playing}
+    class:idle={!slideshow.playing && !spiral.playing && !strobe.playing && !binaural.playing && !suggestions.playing && !messages.playing}
   >
     <div class="hud">
       <SlideshowControls {slideshow} />
@@ -97,6 +104,7 @@
       <StrobeControls {strobe} />
       <BinauralControls {binaural} />
       <SuggestionsControls {suggestions} />
+      <MessagesControls {messages} />
     </div>
   </div>
 
@@ -117,6 +125,7 @@
 
       <SlideshowSettings {slideshow} />
       <SuggestionsSettings {suggestions} />
+      <MessagesSettings {messages} />
       <BinauralSettings {binaural} />
       <SpiralSettings {spiral} />
       <StrobeSettings {strobe} />
