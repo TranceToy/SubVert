@@ -1,5 +1,7 @@
 # SubVert
 
+Available at: https://trancetoy.github.io/SubVert
+
 A small browser app for self-guided immersive sessions. It layers four things on top of each other and lets you mix them however you like:
 
 1. **Slideshow** — cycles through a folder of images you pick from your own computer.
