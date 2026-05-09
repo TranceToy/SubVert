@@ -10,38 +10,35 @@
   ];
 </script>
 
-<section>
-  <h3>Binaural Beats</h3>
-  <p class="note">🎧 Requires stereo headphones</p>
+<p class="note">🎧 Requires stereo headphones</p>
 
-  <label>
-    <span>Beat frequency: <strong>{binaural.beatHz} Hz</strong></span>
-    <input type="range" min="0.5" max="50" step="0.5" bind:value={binaural.beatHz} />
-  </label>
+<label>
+  <span>Beat frequency: <strong>{binaural.beatHz} Hz</strong></span>
+  <input type="range" min="0.5" max="50" step="0.5" bind:value={binaural.beatHz} />
+</label>
 
-  <div class="presets">
-    {#each beatPresets as p}
-      <button
-        class="preset"
-        class:active={binaural.beatHz === p.hz}
-        onclick={() => binaural.beatHz = p.hz}
-      >
-        {p.label}
-        <small>{p.desc}</small>
-      </button>
-    {/each}
-  </div>
+<div class="presets">
+  {#each beatPresets as p}
+    <button
+      class="preset"
+      class:active={binaural.beatHz === p.hz}
+      onclick={() => binaural.beatHz = p.hz}
+    >
+      {p.label}
+      <small>{p.desc}</small>
+    </button>
+  {/each}
+</div>
 
-  <label>
-    <span>Carrier: <strong>{binaural.carrierHz} Hz</strong></span>
-    <input type="range" min="80" max="500" step="5" bind:value={binaural.carrierHz} />
-  </label>
+<label>
+  <span>Carrier: <strong>{binaural.carrierHz} Hz</strong></span>
+  <input type="range" min="80" max="500" step="5" bind:value={binaural.carrierHz} />
+</label>
 
-  <label>
-    <span>Volume: <strong>{Math.round(binaural.volume * 100)}%</strong></span>
-    <input type="range" min="0" max="1" step="0.01" bind:value={binaural.volume} />
-  </label>
-</section>
+<label>
+  <span>Volume: <strong>{Math.round(binaural.volume * 100)}%</strong></span>
+  <input type="range" min="0" max="1" step="0.01" bind:value={binaural.volume} />
+</label>
 
 <style>
   .note {

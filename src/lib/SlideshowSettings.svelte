@@ -2,26 +2,22 @@
   let { slideshow } = $props();
 </script>
 
-<section>
-  <h3>Slideshow</h3>
+<button class="btn-folder" onclick={() => slideshow.pickFolder()}>
+  📁 {slideshow.folderName ? `Folder: ${slideshow.folderName}` : 'Pick Image Folder…'}
+</button>
 
-  <button class="btn-folder" onclick={() => slideshow.pickFolder()}>
-    📁 {slideshow.folderName ? `Folder: ${slideshow.folderName}` : 'Pick Image Folder…'}
-  </button>
+{#if slideshow.slides.length > 0}
+  <div class="slide-nav">
+    <button onclick={() => slideshow.prev()}>‹</button>
+    <span>{slideshow.currentSlide + 1} / {slideshow.slides.length} — {slideshow.slides[slideshow.currentSlide]?.name}</span>
+    <button onclick={() => slideshow.next()}>›</button>
+  </div>
+{/if}
 
-  {#if slideshow.slides.length > 0}
-    <div class="slide-nav">
-      <button onclick={() => slideshow.prev()}>‹</button>
-      <span>{slideshow.currentSlide + 1} / {slideshow.slides.length} — {slideshow.slides[slideshow.currentSlide]?.name}</span>
-      <button onclick={() => slideshow.next()}>›</button>
-    </div>
-  {/if}
-
-  <label>
-    <span>Interval: <strong>{slideshow.intervalMs}ms</strong></span>
-    <input type="range" min="100" max="6000" step="100" bind:value={slideshow.intervalMs} />
-  </label>
-</section>
+<label>
+  <span>Interval: <strong>{slideshow.intervalMs}ms</strong></span>
+  <input type="range" min="100" max="6000" step="100" bind:value={slideshow.intervalMs} />
+</label>
 
 <style>
   .slide-nav {

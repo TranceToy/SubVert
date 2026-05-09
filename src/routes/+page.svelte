@@ -10,28 +10,24 @@
   import { Messages } from '$lib/messages.svelte.js';
 
   import SlideshowView from '$lib/SlideshowView.svelte';
-  import SlideshowControls from '$lib/SlideshowControls.svelte';
   import SlideshowSettings from '$lib/SlideshowSettings.svelte';
 
   import SpiralView from '$lib/SpiralView.svelte';
-  import SpiralControls from '$lib/SpiralControls.svelte';
   import SpiralSettings from '$lib/SpiralSettings.svelte';
 
   import StrobeView from '$lib/StrobeView.svelte';
-  import StrobeControls from '$lib/StrobeControls.svelte';
   import StrobeSettings from '$lib/StrobeSettings.svelte';
 
   import BinauralView from '$lib/BinauralView.svelte';
-  import BinauralControls from '$lib/BinauralControls.svelte';
   import BinauralSettings from '$lib/BinauralSettings.svelte';
 
   import SuggestionsView from '$lib/SuggestionsView.svelte';
-  import SuggestionsControls from '$lib/SuggestionsControls.svelte';
   import SuggestionsSettings from '$lib/SuggestionsSettings.svelte';
 
   import MessagesView from '$lib/MessagesView.svelte';
-  import MessagesControls from '$lib/MessagesControls.svelte';
   import MessagesSettings from '$lib/MessagesSettings.svelte';
+
+  import AccordionRow from '$lib/AccordionRow.svelte';
 
   const slideshow = new Slideshow();
   const spiral = new Spiral();
@@ -41,7 +37,12 @@
   const messages = new Messages();
 
   let showSettings = $state(true);
+  let openRow = $state('slideshow');
   let pausedFromMediaSession = { binaural: false, suggestions: false };
+
+  function toggleRow(name) {
+    openRow = openRow === name ? null : name;
+  }
 
   $effect(() => {
     if (!('mediaSession' in navigator)) return;
@@ -93,21 +94,6 @@
   <SuggestionsView {suggestions} />
   <MessagesView {messages} />
 
-  <!-- Bottom HUD -->
-  <div
-    class="hud-zone"
-    class:idle={!slideshow.playing && !spiral.playing && !strobe.playing && !binaural.playing && !suggestions.playing && !messages.playing}
-  >
-    <div class="hud">
-      <SlideshowControls {slideshow} />
-      <SpiralControls {spiral} />
-      <StrobeControls {strobe} />
-      <BinauralControls {binaural} />
-      <SuggestionsControls {suggestions} />
-      <MessagesControls {messages} />
-    </div>
-  </div>
-
   <!-- Settings toggle -->
   <div class="settings-zone">
     <button class="btn-settings" onclick={() => showSettings = !showSettings} title="Settings">
@@ -123,12 +109,70 @@
         <button class="btn-close" onclick={() => showSettings = false}>✕</button>
       </header>
 
-      <SlideshowSettings {slideshow} />
-      <SuggestionsSettings {suggestions} />
-      <MessagesSettings {messages} />
-      <BinauralSettings {binaural} />
-      <SpiralSettings {spiral} />
-      <StrobeSettings {strobe} />
+      <div class="rows">
+        <AccordionRow
+          title="Slideshow"
+          playing={slideshow.playing}
+          canPlay={slideshow.slides.length > 0}
+          onToggle={() => slideshow.toggle()}
+          expanded={openRow === 'slideshow'}
+          onHeaderClick={() => toggleRow('slideshow')}
+        >
+          <SlideshowSettings {slideshow} />
+        </AccordionRow>
+
+        <AccordionRow
+          title="Suggestions"
+          playing={suggestions.playing}
+          canPlay={suggestions.clips.length > 0}
+          onToggle={() => suggestions.toggle()}
+          expanded={openRow === 'suggestions'}
+          onHeaderClick={() => toggleRow('suggestions')}
+        >
+          <SuggestionsSettings {suggestions} />
+        </AccordionRow>
+
+        <AccordionRow
+          title="Messages"
+          playing={messages.playing}
+          canPlay={messages.messages.length > 0}
+          onToggle={() => messages.toggle()}
+          expanded={openRow === 'messages'}
+          onHeaderClick={() => toggleRow('messages')}
+        >
+          <MessagesSettings {messages} />
+        </AccordionRow>
+
+        <AccordionRow
+          title="Binaural Beats"
+          playing={binaural.playing}
+          onToggle={() => binaural.toggle()}
+          expanded={openRow === 'binaural'}
+          onHeaderClick={() => toggleRow('binaural')}
+        >
+          <BinauralSettings {binaural} />
+        </AccordionRow>
+
+        <AccordionRow
+          title="Spiral"
+          playing={spiral.playing}
+          onToggle={() => spiral.toggle()}
+          expanded={openRow === 'spiral'}
+          onHeaderClick={() => toggleRow('spiral')}
+        >
+          <SpiralSettings {spiral} />
+        </AccordionRow>
+
+        <AccordionRow
+          title="Strobe"
+          playing={strobe.playing}
+          onToggle={() => strobe.toggle()}
+          expanded={openRow === 'strobe'}
+          onHeaderClick={() => toggleRow('strobe')}
+        >
+          <StrobeSettings {strobe} />
+        </AccordionRow>
+      </div>
     </aside>
   {/if}
 </div>
@@ -139,50 +183,6 @@
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-  }
-
-  /* HUD */
-  .hud-zone {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 10rem;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-  }
-
-  .hud-zone .hud {
-    margin-bottom: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .hud-zone:hover .hud,
-  .hud-zone.idle .hud {
-    opacity: 1;
-  }
-
-  /* Shared button styles used by HUD controls in child components */
-  :global(.btn-primary) {
-    padding: 0.7rem 1.5rem;
-    background: rgba(0, 0, 0, 0.65);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 999px;
-    font-size: 1rem;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    transition: background 0.2s;
-  }
-
-  :global(.btn-primary:hover) {
-    background: rgba(0, 0, 0, 0.85);
   }
 
   /* Settings zone + button */
@@ -235,16 +235,17 @@
     backdrop-filter: blur(20px);
     border-left: 1px solid rgba(255, 255, 255, 0.08);
     overflow-y: auto;
-    padding: 1.25rem;
+    padding: 1.25rem 0 1.25rem 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
   }
 
   .settings-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 0 1.25rem;
   }
 
   .settings-header h2 {
@@ -265,23 +266,13 @@
     color: #ccc;
   }
 
-  /* Section/control styles shared by every settings child component.
-     Scoped to .settings so they only apply inside the panel. */
-  .settings :global(section) {
+  .rows {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    padding: 0 0.6rem;
   }
 
-  .settings :global(h3) {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #666;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-    padding-bottom: 0.4rem;
-  }
-
+  /* Shared label/range styles inside accordion bodies. */
   .settings :global(label) {
     display: flex;
     flex-direction: column;
