@@ -5,13 +5,8 @@
 <p class="note">⚠ May trigger seizures in people with photosensitive epilepsy</p>
 
 <label>
-  <span>Min gap: <strong>{strobe.gapMinMs} ms</strong></span>
-  <input type="range" min="100" max="5000" step="50" bind:value={strobe.gapMinMs} />
-</label>
-
-<label>
-  <span>Max gap: <strong>{strobe.gapMaxMs} ms</strong></span>
-  <input type="range" min="100" max="5000" step="50" bind:value={strobe.gapMaxMs} />
+  <span>Gap: <strong>{strobe.gapMs} ms</strong></span>
+  <input type="range" min="10" max="5000" step="10" bind:value={strobe.gapMs} />
 </label>
 
 <label>

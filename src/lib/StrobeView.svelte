@@ -8,10 +8,7 @@
     let timeoutId;
 
     function scheduleNext() {
-      const min = Math.min(strobe.gapMinMs, strobe.gapMaxMs);
-      const max = Math.max(strobe.gapMinMs, strobe.gapMaxMs);
-      const gap = min + Math.random() * (max - min);
-      timeoutId = setTimeout(flash, gap);
+      timeoutId = setTimeout(flash, strobe.gapMs);
     }
 
     function flash() {
