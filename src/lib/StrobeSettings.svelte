@@ -15,6 +15,11 @@
 </label>
 
 <label>
+  <span>Flash duration: <strong>{strobe.flashMs} ms</strong></span>
+  <input type="range" min="20" max="500" step="10" bind:value={strobe.flashMs} />
+</label>
+
+<label>
   <span>Intensity: <strong>{Math.round(strobe.intensity * 100)}%</strong></span>
   <input type="range" min="0" max="1" step="0.05" bind:value={strobe.intensity} />
 </label>

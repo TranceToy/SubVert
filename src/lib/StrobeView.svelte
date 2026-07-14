@@ -1,6 +1,4 @@
 <script>
-  import { FLASH_MS } from './strobe.svelte.js';
-
   let { strobe } = $props();
   let flashing = $state(false);
 
@@ -18,7 +16,7 @@
 
     function flash() {
       flashing = true;
-      timeoutId = setTimeout(endFlash, FLASH_MS);
+      timeoutId = setTimeout(endFlash, strobe.flashMs);
     }
 
     function endFlash() {
