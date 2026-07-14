@@ -1,6 +1,10 @@
+export const FLASH_MS = 50;
+
 export class Strobe {
-  freqHz = $state(10);
+  gapMinMs = $state(300);
+  gapMaxMs = $state(1500);
   intensity = $state(1.0);
+  color = $state('#ffffff');
   playing = $state(false);
 
   toggle() {
